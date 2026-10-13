@@ -273,7 +273,7 @@ function AssetRow({ asset, currency, onClick }: { asset: typeof assets[number]; 
   const total = asset.amount * asset.price
   return <div className="asset-row asset-row-clickable glass-subtle" role="button" tabIndex={0} aria-label={`Подробнее об активе ${asset.name}`} onClick={onClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}><div className={'coin-icon ' + asset.color}>{asset.mark}</div><div className="asset-main"><strong>{asset.symbol}</strong><span>{asset.name}</span></div><div className="asset-value"><strong>{asset.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })}</strong><span>{money(total, currency)}</span></div><div className="asset-change">{asset.change} ↗</div><ChevronRight className="asset-chevron" size={15} /></div>
 }
-function AssetDetailModal({ asset, currency, visible, transactions, onClose }: { asset: typeof assets[number]; currency: Currency; visible: boolean; transactions: Tx[]; onClose: () => void }) {
+function AssetDetailModal({ asset, currency, visible, transactions, onClose }: { asset: DisplayAsset; currency: Currency; visible: boolean; transactions: Tx[]; onClose: () => void }) {
   const total = asset.amount * asset.price
   const points = asset.symbol === 'TON' ? '2,70 28,58 55,63 82,36 109,44 137,24 164,35 192,15 220,25 248,9 278,16 308,4' : asset.symbol === 'ETH' ? '2,52 28,45 55,54 82,31 109,37 137,19 164,28 192,35 220,16 248,21 278,8 308,12' : '2,36 28,35 55,37 82,33 109,35 137,31 164,33 192,30 220,32 248,29 278,30 308,28'
   const assetTransactions = transactions.filter(tx => {
