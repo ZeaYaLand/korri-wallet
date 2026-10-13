@@ -58,6 +58,7 @@ export default function App() {
   const [selectedAsset, setSelectedAsset] = useState<typeof assets[number] | null>(null)
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
+  const [sendAsset, setSendAsset] = useState<typeof assets[number]['symbol']>('TON')
   const [notice, setNotice] = useState('')
 
   useEffect(() => {
@@ -81,7 +82,7 @@ export default function App() {
   const sendDemo = () => {
     const value = Number(amount)
     if (address.trim().length < 8 || !Number.isFinite(value) || value <= 0) { notify('Введи демо-адрес и сумму больше нуля.'); return }
-    setTransactions(prev => [{ id: Date.now(), title: 'Симуляция перевода', detail: 'Demo Testnet · ' + address.slice(0, 12), amount: '−' + value.toFixed(2) + ' TON', incoming: false, time: 'Только что' }, ...prev])
+    setTransactions(prev => [{ id: Date.now(), title: 'Симуляция отправки ' + sendAsset, detail: 'Demo Testnet · ' + address.slice(0, 12), amount: '−' + value.toFixed(2) + ' ' + sendAsset, incoming: false, time: 'Только что' }, ...prev])
     setAddress(''); setAmount(''); setScreen('main'); setTab('activity'); setTxFilter('all')
     notify('Добавлена только демо-операция. Блокчейн не использовался.')
   }
@@ -96,7 +97,7 @@ export default function App() {
     {screen === 'send' ? <main className="page">
       <button className="back-button" onClick={back}>← Назад</button>
       <div className="page-heading"><span className="section-kicker">DEMO TESTNET</span><h1>Отправить <span>актив</span></h1><p>Это симуляция, реальный перевод не выполняется.</p></div>
-      <div className="form-card glass"><label htmlFor="address">Адрес получателя</label><input id="address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Введи демо-адрес" autoComplete="off" /><p className="field-note">Не вводи seed-фразы или приватные ключи.</p><label htmlFor="amount">Сумма TON</label><div className="amount-input"><input id="amount" type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" /><span>TON</span></div><div className="security-note"><ShieldCheck size={17} /> Тестовый режим: реальные средства не используются.</div><button className="submit-button" onClick={sendDemo}><ArrowUpRight size={17} /> Симулировать отправку</button></div>
+      <div className="form-card glass"><label htmlFor="address">Адрес получателя</label><input id="address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Введи демо-адрес" autoComplete="off" /><p className="field-note">Не вводи seed-фразы или приватные ключи.</p><label>Выбери актив</label><div className="send-asset-options" role="group" aria-label="Актив для демо-отправки">{assets.map(asset => <button type="button" key={asset.symbol} className={sendAsset === asset.symbol ? 'selected' : ''} aria-pressed={sendAsset === asset.symbol} onClick={() => setSendAsset(asset.symbol)}><span className={'coin-dot ' + asset.color}>{asset.mark}</span><span>{asset.symbol}</span></button>)}</div><div className="send-available">Демо-баланс: {assets.find(asset => asset.symbol === sendAsset)?.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })} {sendAsset}</div><label htmlFor="amount">Сумма {sendAsset}</label><div className="amount-input"><input id="amount" type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" /><span>{sendAsset}</span></div><div className="security-note"><ShieldCheck size={17} /> Тестовый режим: реальные средства не используются.</div><button className="submit-button" onClick={sendDemo}><ArrowUpRight size={17} /> Симулировать отправку</button></div>
     </main> : screen === 'receive' ? <main className="page">
       <button className="back-button" onClick={back}>← Назад</button>
       <div className="page-heading"><span className="section-kicker">DEMO TESTNET</span><h1>Получить <span>актив</span></h1><p>Адрес ниже демонстрационный. Не отправляй на него средства.</p></div>
