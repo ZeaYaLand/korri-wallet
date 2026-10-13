@@ -62,3 +62,37 @@
 .light-theme .asset-history-heading strong,.light-theme .asset-history-main strong{color:#29243e}
 .light-theme .asset-history-heading>span,.light-theme .asset-history-main span,.light-theme .asset-history-empty{color:#77718e}
 .light-theme .asset-history-amount.positive,.light-theme .asset-history .positive{color:#18875d}
+
+
+/* Portfolio distribution statistics */
+.portfolio-stats{padding:17px 15px;margin:18px 0 14px;border:1px solid #ffffff12;border-radius:19px;background:linear-gradient(145deg,#171629d9,#11131fd9);box-shadow:0 14px 35px #00000012}
+.stats-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:17px}
+.stats-heading h2{font-family:'Space Grotesk',sans-serif;font-size:16px;letter-spacing:-.4px;margin:5px 0 0}
+.stats-total{font-size:13px;font-weight:700;white-space:nowrap}
+.largest-asset{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;background:#9e8aff10;border:1px solid #a99aff1c;margin-bottom:18px}
+.largest-asset .coin-icon{width:37px;height:37px;flex-shrink:0}
+.largest-asset>div:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.largest-asset>div:nth-child(2)>span{font-size:9px;color:var(--muted)}
+.largest-asset>div:nth-child(2)>strong{font-size:12px}
+.largest-share{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#b9a7ff}
+.distribution-list{display:grid;gap:17px}
+.distribution-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.distribution-name{display:flex;align-items:center;gap:7px;min-width:0}
+.coin-dot{display:grid;place-items:center;width:25px;height:25px;border-radius:9px;font-size:12px;flex-shrink:0}
+.coin-dot.blue{background:#4f8bff20;color:#7eb2ff}.coin-dot.green{background:#2bd49b20;color:#6de5ad}.coin-dot.purple{background:#9c7bff20;color:#c0aaff}
+.distribution-name>strong{font-size:11px}
+.distribution-fullname{font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.distribution-value{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.distribution-value strong{font-size:10px}
+.distribution-value span{font-size:9px;color:var(--muted)}
+.distribution-track{height:6px;border-radius:99px;overflow:hidden;background:#ffffff0c}
+.distribution-fill{height:100%;min-width:2px;border-radius:99px;transition:width .3s ease}
+.distribution-fill.blue{background:linear-gradient(90deg,#4e7eff,#82b8ff)}
+.distribution-fill.green{background:linear-gradient(90deg,#22b981,#76efbd)}
+.distribution-fill.purple{background:linear-gradient(90deg,#8464ee,#c4a7ff)}
+.stats-disclaimer{margin:17px 0 0;font-size:9px;line-height:1.6;color:var(--muted)}
+.light-theme .portfolio-stats{background:linear-gradient(145deg,#ffffff,#f7f4ff);border-color:#e9e3f6;box-shadow:0 10px 28px #45377a0b}
+.light-theme .largest-asset{background:#f2eeff;border-color:#e6defd}
+.light-theme .largest-asset>div:nth-child(2)>strong,.light-theme .distribution-name>strong,.light-theme .distribution-value strong,.light-theme .stats-heading h2{color:#29243e}
+.light-theme .distribution-track{background:#e8e3f2}
+@media(max-width:360px){.portfolio-stats{padding:14px 11px}.distribution-name{gap:5px}.distribution-fullname{max-width:78px}.distribution-value strong{font-size:9px}.stats-total{font-size:11px}}
