@@ -5,9 +5,9 @@ type Tab = 'home' | 'assets' | 'activity' | 'settings'
 type Tx = { id: number; title: string; detail: string; amount: string; incoming: boolean; time: string }
 
 const assets = [
-  { symbol: 'TON', name: 'Toncoin', amount: 128.42, price: 5.24, mark: '💎', color: 'blue' },
-  { symbol: 'USDT', name: 'Tether USD', amount: 245, price: 1, mark: '₮', color: 'green' },
-  { symbol: 'ETH', name: 'Ethereum', amount: 0.84, price: 3240.5, mark: '◆', color: 'purple' }
+  { symbol: 'TON', name: 'Toncoin', amount: 128.42, price: 5.24, change: '+2.8%', mark: '💎', color: 'blue' },
+  { symbol: 'USDT', name: 'Tether USD', amount: 245, price: 1, change: '+0.1%', mark: '₮', color: 'green' },
+  { symbol: 'ETH', name: 'Ethereum', amount: 0.84, price: 3240.5, change: '+1.4%', mark: '◆', color: 'purple' }
 ]
 const initialTx: Tx[] = [
   { id: 1042, title: 'Получение TON', detail: 'Demo Testnet · демо-адрес', amount: '+12.50 TON', incoming: true, time: 'Сегодня, 14:32' },
