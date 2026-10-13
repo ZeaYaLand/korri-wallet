@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowDownLeft, ArrowUpRight, Bell, ChevronRight, Copy, Eye, EyeOff, Home, Layers3, Settings, ShieldCheck, WalletCards } from 'lucide-react'
 
 type Tab = 'home' | 'assets' | 'activity' | 'settings'
@@ -21,11 +21,38 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('home')
   const [screen, setScreen] = useState<'main' | 'send' | 'receive'>('main')
   const [balanceVisible, setBalanceVisible] = useState(true)
-  const [transactions, setTransactions] = useState(initialTx)
+  const [transactions, setTransactions] = useState<Tx[]>(() => {
+    try {
+      const saved = localStorage.getItem('korri-wallet-demo-transactions')
+      if (!saved) return initialTx
+      const parsed: unknown = JSON.parse(saved)
+      if (Array.isArray(parsed) && parsed.every((tx: unknown) => {
+        if (!tx || typeof tx !== 'object') return false
+        const item = tx as Partial<Tx>
+        return typeof item.id === 'number' &&
+          typeof item.title === 'string' &&
+          typeof item.detail === 'string' &&
+          typeof item.amount === 'string' &&
+          typeof item.incoming === 'boolean' &&
+          typeof item.time === 'string'
+      })) return parsed as Tx[]
+    } catch {
+      // If saved demo data is unavailable or invalid, use the sample history.
+    }
+    return initialTx
+  })
   const [txFilter, setTxFilter] = useState<TxFilter>('all')
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('korri-wallet-demo-transactions', JSON.stringify(transactions))
+    } catch {
+      // The app remains usable if browser storage is unavailable.
+    }
+  }, [transactions])
   const total = assets.reduce((sum, a) => sum + a.amount * a.price, 0)
   const filteredTransactions = transactions.filter(tx => txFilter === 'all' || (txFilter === 'incoming' ? tx.incoming : !tx.incoming))
   const notify = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(''), 3000) }
