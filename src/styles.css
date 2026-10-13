@@ -106,3 +106,5 @@
 .send-available{margin:0 0 15px;color:var(--muted);font-size:10px}
 .light-theme .send-asset-options button{background:#fff;border-color:#e5dff2;color:#6f6886}
 .light-theme .send-asset-options button.selected{background:#f0ebff;border-color:#a28cff;color:#4d3b92}
+
+.amount-warning{margin:8px 2px 0;color:#ffb86b;font-size:10px;line-height:1.5}.amount-input input[aria-invalid="true"]{border-color:#ffb86b88}.submit-button:disabled{opacity:.48;cursor:not-allowed;box-shadow:none}.light-theme .amount-warning{color:#a85c12}
