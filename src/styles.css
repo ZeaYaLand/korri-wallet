@@ -108,3 +108,19 @@
 .light-theme .send-asset-options button.selected{background:#f0ebff;border-color:#a28cff;color:#4d3b92}
 
 .amount-warning{margin:8px 2px 0;color:#ffb86b;font-size:10px;line-height:1.5}.amount-input input[aria-invalid="true"]{border-color:#ffb86b88}.submit-button:disabled{opacity:.48;cursor:not-allowed;box-shadow:none}.light-theme .amount-warning{color:#a85c12}
+
+
+.market-price-status{display:flex;align-items:center;gap:9px;padding:10px 12px;margin:-10px 0 22px;border:1px solid #ffffff12;border-radius:13px;background:#ffffff05}
+.market-status-dot{width:7px;height:7px;border-radius:50%;background:#f0b35d;flex-shrink:0}
+.market-status-dot.live{background:#6de5ad;box-shadow:0 0 9px #6de5ad88}
+.market-status-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
+.market-status-copy strong{font-size:10px;font-weight:700}
+.market-status-copy small{font-size:9px;color:var(--muted);line-height:1.45}
+.market-status-copy a{color:#b9a7ff;text-decoration:none}
+.market-price-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-8px 0 17px;padding:10px 12px;border:1px solid #ffffff12;border-radius:13px;background:#ffffff05}
+.market-price-label{font-size:9px;line-height:1.5;color:var(--muted)}
+.market-price-tools button{flex-shrink:0;border:1px solid #a78bfa55;border-radius:10px;background:#a78bfa18;color:#d2c5ff;padding:9px 10px;font-size:10px;font-weight:700}
+.market-price-tools button:disabled{opacity:.55;cursor:wait}
+.light-theme .market-price-status,.light-theme .market-price-tools{background:#fff;border-color:#e5dff2}
+.light-theme .market-price-tools button{background:#f0ebff;color:#4d3b92;border-color:#c9b9ff}
+.asset-change:has(+ .asset-chevron){white-space:nowrap}
