@@ -344,8 +344,9 @@ function AssetDetailModal({ asset, currency, visible, transactions, onClose }: {
       <div className="asset-history-chart-heading"><strong>История рыночной цены</strong><span>{historyStatus === 'loading' ? 'Загрузка…' : historyStatus === 'live' ? 'CoinGecko · ' + historyUpdatedAt : 'История недоступна'}</span></div>
       <div className="asset-detail-chart" role="img" aria-label={historyStatus === 'live' ? 'Реальный график ' + asset.symbol + ' за ' + rangeLabel + ' по CoinGecko' : 'График ' + asset.symbol + ', демонстрационные данные'}>
         <svg viewBox="0 0 310 76" preserveAspectRatio="none" aria-hidden="true">
+          <defs><linearGradient id="assetHistoryFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a78bfa" stopOpacity=".30" /><stop offset="100%" stopColor="#a78bfa" stopOpacity="0" /></linearGradient></defs>
           <path className="chart-grid-line" d="M0 20 H310 M0 42 H310 M0 64 H310" />
-          {historyStatus === 'live' && chartPoints.length > 1 ? <><path d={historicalArea} fill="url(#portfolioChartFill)" /><path d={historicalLine} className="chart-line" /></> : <polyline points={fallbackPoints} className="chart-line" />}
+          {historyStatus === 'live' && chartPoints.length > 1 ? <><path d={historicalArea} fill="url(#assetHistoryFill)" /><path d={historicalLine} className="chart-line" /></> : <polyline points={fallbackPoints} className="chart-line" />}
         </svg>
       </div>
       <div className="asset-history-controls" role="group" aria-label="Период исторического графика">{(['24H', '7D', '30D'] as HistoryRange[]).map(item => <button key={item} type="button" className={range === item ? 'selected' : ''} aria-pressed={range === item} onClick={() => setRange(item)}>{item === '24H' ? '24 часа' : item === '7D' ? '7 дней' : '30 дней'}</button>)}</div>
