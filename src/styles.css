@@ -96,3 +96,13 @@
 .light-theme .largest-asset>div:nth-child(2)>strong,.light-theme .distribution-name>strong,.light-theme .distribution-value strong,.light-theme .stats-heading h2{color:#29243e}
 .light-theme .distribution-track{background:#e8e3f2}
 @media(max-width:360px){.portfolio-stats{padding:14px 11px}.distribution-name{gap:5px}.distribution-fullname{max-width:78px}.distribution-value strong{font-size:9px}.stats-total{font-size:11px}}
+
+
+/* Demo send asset selector */
+.send-asset-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 7px}
+.send-asset-options button{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;padding:10px 7px;border:1px solid #ffffff18;border-radius:12px;background:#ffffff05;color:var(--muted);font-size:11px;font-weight:700;transition:background .18s,border-color .18s,color .18s}
+.send-asset-options button.selected{background:#a28cff1b;border-color:#a28cff88;color:#d3c7ff;box-shadow:0 0 0 2px #a28cff0b}
+.send-asset-options .coin-dot{width:23px;height:23px;border-radius:8px;font-size:11px}
+.send-available{margin:0 0 15px;color:var(--muted);font-size:10px}
+.light-theme .send-asset-options button{background:#fff;border-color:#e5dff2;color:#6f6886}
+.light-theme .send-asset-options button.selected{background:#f0ebff;border-color:#a28cff;color:#4d3b92}
