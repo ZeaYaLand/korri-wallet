@@ -41,3 +41,24 @@
 .light-theme .asset-detail-total{color:#29243e}
 .light-theme .asset-detail-positive{color:#18875d}
 @media(max-width:370px){.asset-row{gap:7px;padding-left:8px}.coin-icon{width:34px;height:34px}.asset-main strong,.asset-value strong{font-size:11px}.asset-main span,.asset-value span{font-size:9px}.asset-change{font-size:8px}.asset-chevron{width:12px}}
+
+
+/* Per-asset demo transaction history */
+.asset-history{margin:18px 0 15px;border-top:1px solid #ffffff14;padding-top:15px}
+.asset-history-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.asset-history-heading strong{font-size:12px}
+.asset-history-heading>span{font-size:9px;color:var(--muted)}
+.asset-history-list{display:grid;gap:2px}
+.asset-history-row{display:flex;align-items:center;gap:9px;padding:9px 0;min-width:0}
+.asset-history-row .tx-icon{width:31px;height:31px;flex-shrink:0}
+.asset-history-main{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.asset-history-main strong{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.asset-history-main span{font-size:9px;color:var(--muted)}
+.asset-history-amount{font-size:10px;white-space:nowrap}
+.asset-history-amount.positive{color:#7de7b5}
+.asset-history-empty{font-size:10px;line-height:1.6;color:var(--muted);padding:4px 0 8px;margin:0}
+.asset-history .positive{color:#7de7b5}
+.light-theme .asset-history{border-top-color:#e8e3f2}
+.light-theme .asset-history-heading strong,.light-theme .asset-history-main strong{color:#29243e}
+.light-theme .asset-history-heading>span,.light-theme .asset-history-main span,.light-theme .asset-history-empty{color:#77718e}
+.light-theme .asset-history-amount.positive,.light-theme .asset-history .positive{color:#18875d}
