@@ -6,10 +6,16 @@ type TxFilter = 'all' | 'incoming' | 'outgoing'
 type Currency = 'USD' | 'EUR'
 type Tx = { id: number; title: string; detail: string; amount: string; incoming: boolean; time: string }
 
+// Все количества и цены ниже — условные данные для интерфейса, не котировки рынка.
 const assets = [
   { symbol: 'TON', name: 'Toncoin', amount: 128.42, price: 5.24, change: '+2.8%', mark: '💎', color: 'blue' },
   { symbol: 'USDT', name: 'Tether USD', amount: 245, price: 1, change: '+0.1%', mark: '₮', color: 'green' },
-  { symbol: 'ETH', name: 'Ethereum', amount: 0.84, price: 3240.5, change: '+1.4%', mark: '◆', color: 'purple' }
+  { symbol: 'ETH', name: 'Ethereum', amount: 0.84, price: 3240.5, change: '+1.4%', mark: '◆', color: 'purple' },
+  { symbol: 'BTC', name: 'Bitcoin', amount: 0.025, price: 67000, change: '+1.9%', mark: '₿', color: 'green' },
+  { symbol: 'SOL', name: 'Solana', amount: 4.5, price: 150, change: '+3.2%', mark: '◎', color: 'purple' },
+  { symbol: 'XRP', name: 'XRP', amount: 220, price: 0.55, change: '+0.7%', mark: '✕', color: 'blue' },
+  { symbol: 'DOGE', name: 'Dogecoin', amount: 800, price: 0.14, change: '+1.1%', mark: 'Ð', color: 'green' },
+  { symbol: 'ADA', name: 'Cardano', amount: 600, price: 0.45, change: '+0.9%', mark: '₳', color: 'blue' }
 ]
 const initialTx: Tx[] = [
   { id: 1042, title: 'Получение TON', detail: 'Demo Testnet · демо-адрес', amount: '+12.50 TON', incoming: true, time: 'Сегодня, 14:32' },
