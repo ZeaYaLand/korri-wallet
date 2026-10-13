@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDownLeft, ArrowUpRight, Bell, ChevronRight, Copy, Eye, EyeOff, Home, Layers3, Search, Settings, ShieldCheck, Sun, WalletCards } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, Bell, ChevronRight, Copy, Eye, EyeOff, Home, Layers3, Search, Settings, ShieldCheck, Sun, TrendingUp, WalletCards } from 'lucide-react'
 
 type Tab = 'home' | 'assets' | 'activity' | 'settings'
 type TxFilter = 'all' | 'incoming' | 'outgoing'
@@ -104,6 +104,7 @@ export default function App() {
       {tab === 'home' && <main className="page home-page">
         <div className="greeting-row"><div><div className="section-kicker">ТВОЙ КРИПТОМИР</div><h1>Привет, <span>Korri</span> ✦</h1><p>Всё под контролем. Всё в одном месте.</p></div><button className="profile-orb" onClick={() => setTab('settings')}>K</button></div>
         <section className="balance-card"><div className="orb orb-one" /><div className="orb orb-two" /><div className="balance-top"><span className="eyebrow">ОБЩИЙ ДЕМО-БАЛАНС</span><button className="round-icon" onClick={() => setBalanceVisible(v => !v)} aria-label="Показать или скрыть баланс">{balanceVisible ? <Eye size={17} /> : <EyeOff size={17} />}</button></div><div className="balance-number">{balanceVisible ? money(total, currency) : '••••••••'}</div><div className="balance-foot"><span className="demo-pill"><i /> DEMO MODE</span><span className="balance-change">↗ 2.4% <small>условное изменение</small></span></div><div className="quick-actions"><button className="primary-action" onClick={() => setScreen('send')}><ArrowUpRight size={17} /> Отправить</button><button className="secondary-action" onClick={() => setScreen('receive')}><ArrowDownLeft size={17} /> Получить</button></div></section>
+        <PortfolioChart total={total} currency={currency} visible={balanceVisible} />
         <SectionHeading title="Мои активы" subtitle="Тестовые данные" action="Все" onClick={() => setTab('assets')} />
         <div className="asset-list">{assets.map(a => <AssetRow key={a.symbol} asset={a} currency={currency} />)}</div>
         <SectionHeading title="Последние операции" subtitle="История демо-транзакций" action="Все" onClick={() => setTab('activity')} extraClass="transactions-heading" />
@@ -120,6 +121,44 @@ export default function App() {
     {notice && <div className="toast"><ShieldCheck size={16} />{notice}<button onClick={() => setNotice('')}>×</button></div>}
     <footer className="app-footer"><span>korri.wallet</span><span>BUILT FOR TELEGRAM · DEMO</span></footer>
   </div>
+}
+
+
+type ChartRange = '24H' | '7D' | '30D'
+const chartSeries: Record<ChartRange, number[]> = {
+  '24H': [0.972, 0.981, 0.976, 0.988, 0.983, 0.995, 0.991, 1],
+  '7D': [0.914, 0.928, 0.919, 0.951, 0.944, 0.972, 0.961, 1],
+  '30D': [0.872, 0.889, 0.883, 0.914, 0.905, 0.938, 0.927, 0.962, 0.951, 1]
+}
+function PortfolioChart({ total, currency, visible }: { total: number; currency: Currency; visible: boolean }) {
+  const [range, setRange] = useState<ChartRange>('7D')
+  const values = chartSeries[range].map(point => total * point)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const spread = max - min || 1
+  const coords = values.map((value, i) => ({
+    x: 10 + (i / (values.length - 1)) * 300,
+    y: 94 - ((value - min) / spread) * 70
+  }))
+  const line = coords.map((point, i) => `${i === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ')
+  const area = `${line} L 310 106 L 10 106 Z`
+  const change = ((values[values.length - 1] / values[0]) - 1) * 100
+  return <section className="portfolio-chart glass-subtle">
+    <div className="chart-heading"><div><span className="section-kicker">АНАЛИТИКА</span><h2>Динамика портфеля</h2><p>Условная история стоимости</p></div><div className="chart-icon"><TrendingUp size={19} /></div></div>
+    <div className="chart-summary"><strong>{visible ? money(total, currency) : '••••••'}</strong><span className="chart-change">↗ {change.toFixed(1)}% <small>за период</small></span></div>
+    <div className="chart-plot" role="img" aria-label={`Демонстрационный график стоимости портфеля за ${range}`}>
+      <svg viewBox="0 0 320 112" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="portfolioChartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a78bfa" stopOpacity=".34" /><stop offset="100%" stopColor="#a78bfa" stopOpacity="0" /></linearGradient></defs>
+        <path className="chart-grid-line" d="M 0 24 H 320 M 0 60 H 320 M 0 96 H 320" />
+        <path d={area} fill="url(#portfolioChartFill)" />
+        <path d={line} className="chart-line" />
+        <circle cx={coords[coords.length - 1].x} cy={coords[coords.length - 1].y} r="4" className="chart-current-dot" />
+      </svg>
+    </div>
+    <div className="chart-axis"><span>{visible ? money(min, currency) : '••••'}</span><span>{visible ? money(max, currency) : '••••'}</span></div>
+    <div className="chart-ranges" role="group" aria-label="Период графика">{(['24H', '7D', '30D'] as ChartRange[]).map(item => <button key={item} className={range === item ? 'selected' : ''} aria-pressed={range === item} onClick={() => setRange(item)}>{item === '24H' ? '24 часа' : item === '7D' ? '7 дней' : '30 дней'}</button>)}</div>
+    <p className="chart-disclaimer">График построен на условных данных и не отражает реальные рыночные цены.</p>
+  </section>
 }
 
 function PageHeading({ kicker, title, subtitle }: { kicker: string; title: string; subtitle: string }) {
