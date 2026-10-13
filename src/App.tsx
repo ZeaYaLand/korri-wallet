@@ -131,7 +131,7 @@ export default function App() {
     }
     setPriceRefresh(value => value + 1)
   }
-  const displayAssets: DisplayAsset[] = displayAssets.map(asset => {
+  const displayAssets: DisplayAsset[] = assets.map(asset => {
     const live = marketPrices[asset.symbol]
     const price = live ? (currency === 'EUR' ? live.eur : live.usd) : (currency === 'EUR' ? asset.price * DEMO_EUR_RATE : asset.price)
     const change = live
