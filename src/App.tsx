@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ArrowDownLeft, ArrowUpRight, Bell, ChevronRight, Copy, Eye, EyeOff, Home, Layers3, Settings, ShieldCheck, WalletCards } from 'lucide-react'
 
 type Tab = 'home' | 'assets' | 'activity' | 'settings'
+type TxFilter = 'all' | 'incoming' | 'outgoing'
 type Tx = { id: number; title: string; detail: string; amount: string; incoming: boolean; time: string }
 
 const assets = [
@@ -21,10 +22,12 @@ export default function App() {
   const [screen, setScreen] = useState<'main' | 'send' | 'receive'>('main')
   const [balanceVisible, setBalanceVisible] = useState(true)
   const [transactions, setTransactions] = useState(initialTx)
+  const [txFilter, setTxFilter] = useState<TxFilter>('all')
   const [address, setAddress] = useState('')
   const [amount, setAmount] = useState('')
   const [notice, setNotice] = useState('')
   const total = assets.reduce((sum, a) => sum + a.amount * a.price, 0)
+  const filteredTransactions = transactions.filter(tx => txFilter === 'all' || (txFilter === 'incoming' ? tx.incoming : !tx.incoming))
   const notify = (message: string) => { setNotice(message); window.setTimeout(() => setNotice(''), 3000) }
   const sendDemo = () => {
     const value = Number(amount)
@@ -60,7 +63,7 @@ export default function App() {
         <div className="test-warning"><ShieldCheck size={16} /><span>DEMO MODE · Все цифры условные, реальных средств нет.</span></div>
       </main>}
       {tab === 'assets' && <main className="page"><PageHeading kicker="ПОРТФЕЛЬ" title="Мои активы" subtitle="Демонстрационные активы для тестирования." /><div className="mini-total glass"><span>Общая стоимость</span><strong>{balanceVisible ? money(total) : '••••••••'}</strong><button className="text-action" onClick={() => setBalanceVisible(v => !v)}>{balanceVisible ? 'Скрыть' : 'Показать'}</button></div><div className="asset-list">{assets.map(a => <AssetRow key={a.symbol} asset={a} />)}</div></main>}
-      {tab === 'activity' && <main className="page"><PageHeading kicker="ЖУРНАЛ" title="История операций" subtitle="Здесь отображаются только действия прототипа." /><div className="filter-pills"><span className="selected">Все операции</span><span>Получение</span><span>Отправка</span></div><div className="transaction-list glass-subtle">{transactions.map(tx => <TransactionRow key={tx.id} tx={tx} />)}</div><div className="test-warning"><ShieldCheck size={16} /><span>История хранится только в памяти и сбросится после перезагрузки.</span></div></main>}
+      {tab === 'activity' && <main className="page"><PageHeading kicker="ЖУРНАЛ" title="История операций" subtitle="Здесь отображаются только действия прототипа." /><div className="filter-pills" aria-label="Фильтр операций"><button type="button" className={txFilter === 'all' ? 'selected' : ''} onClick={() => setTxFilter('all')}>Все операции</button><button type="button" className={txFilter === 'incoming' ? 'selected' : ''} onClick={() => setTxFilter('incoming')}>Получение</button><button type="button" className={txFilter === 'outgoing' ? 'selected' : ''} onClick={() => setTxFilter('outgoing')}>Отправка</button></div><div className="transaction-list glass-subtle">{filteredTransactions.length ? filteredTransactions.map(tx => <TransactionRow key={tx.id} tx={tx} />) : <p className="empty-transactions">Операций в этой категории пока нет.</p>}</div><div className="test-warning"><ShieldCheck size={16} /><span>История хранится только в памяти и сбросится после перезагрузки.</span></div></main>}
       {tab === 'settings' && <main className="page"><PageHeading kicker="ПРОФИЛЬ" title="Настройки кошелька" subtitle="Korri Wallet · версия 0.1.0" /><div className="profile-card glass"><div className="profile-large">K</div><div><h2>Korri</h2><p>Локальный демо-профиль</p><span className="demo-pill"><i /> ТЕСТОВЫЙ РЕЖИМ</span></div></div><div className="settings-list glass-subtle"><button onClick={() => notify('Выбрана сеть Demo Testnet.')}><Layers3 /><span><strong>Сеть</strong><small>Demo Testnet</small></span><ChevronRight /></button><button onClick={() => notify('Ключи пока не создаются.')}><ShieldCheck /><span><strong>Безопасность</strong><small>Ключи пока не создаются</small></span><ChevronRight /></button><button onClick={() => notify('В прототипе нет внешних подключений.')}><Settings /><span><strong>Приватность</strong><small>Тестовый интерфейс</small></span><ChevronRight /></button></div><button className="dashed-button" onClick={() => { setTransactions(initialTx); setTab('home'); notify('Демо-история восстановлена.') }}>Сбросить демо-историю</button></main>}
     </>}
     <nav className="bottom-nav">{([['home', Home, 'Главная'], ['assets', Layers3, 'Активы'], ['activity', ArrowUpRight, 'История'], ['settings', Settings, 'Настройки']] as const).map(([id, Icon, label]) => <button key={id} className={'nav-item ' + (tab === id && screen === 'main' ? 'active' : '')} onClick={() => { setTab(id); setScreen('main') }}><Icon size={19} /><span>{label}</span></button>)}</nav>
