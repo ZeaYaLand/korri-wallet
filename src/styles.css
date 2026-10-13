@@ -124,3 +124,18 @@
 .light-theme .market-price-status,.light-theme .market-price-tools{background:#fff;border-color:#e5dff2}
 .light-theme .market-price-tools button{background:#f0ebff;color:#4d3b92;border-color:#c9b9ff}
 .asset-change:has(+ .asset-chevron){white-space:nowrap}
+
+
+.asset-detail-chart-wrap{margin:18px 0 14px;padding:13px 12px;border:1px solid #ffffff12;border-radius:14px;background:#ffffff04}
+.asset-history-chart-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.asset-history-chart-heading strong{font-size:11px}
+.asset-history-chart-heading span{font-size:9px;color:var(--muted);text-align:right}
+.asset-detail-chart-wrap .asset-detail-chart{margin:0}
+.asset-history-controls{display:flex;gap:6px;margin-top:10px}
+.asset-history-controls button{flex:1;padding:8px 5px;border:1px solid #ffffff12;border-radius:9px;background:#ffffff05;color:var(--muted);font-size:10px}
+.asset-history-controls button.selected{color:#d2c5ff;border-color:#a78bfa66;background:#a78bfa20}
+.asset-history-range-values{display:flex;justify-content:space-between;gap:8px;margin-top:10px;font-size:9px;color:var(--muted)}
+.asset-history-chart-note{margin:9px 0 0;color:var(--muted);font-size:10px;line-height:1.5}
+.light-theme .asset-detail-chart-wrap{background:#fff;border-color:#e5dff2}
+.light-theme .asset-history-controls button{background:#f8f6ff;border-color:#e5dff2}
+.light-theme .asset-history-controls button.selected{background:#f0ebff;color:#4d3b92;border-color:#c9b9ff}
