@@ -20,6 +20,9 @@ const assets = [
 type MarketPrice = { usd: number; eur: number; usdChange?: number; eurChange?: number }
 type PriceStatus = 'loading' | 'live' | 'stale' | 'demo'
 type DisplayAsset = typeof assets[number] & { priceSource: 'market' | 'demo' }
+type HistoricalPoint = { time: number; price: number }
+type HistoryRange = '24H' | '7D' | '30D'
+type HistoryStatus = 'loading' | 'live' | 'demo'
 const marketCoinIds: Record<string, string> = {
   TON: 'the-open-network', USDT: 'tether', ETH: 'ethereum', BTC: 'bitcoin',
   SOL: 'solana', XRP: 'ripple', DOGE: 'dogecoin', ADA: 'cardano'
@@ -274,13 +277,81 @@ function AssetRow({ asset, currency, onClick }: { asset: typeof assets[number]; 
   return <div className="asset-row asset-row-clickable glass-subtle" role="button" tabIndex={0} aria-label={`Подробнее об активе ${asset.name}`} onClick={onClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}><div className={'coin-icon ' + asset.color}>{asset.mark}</div><div className="asset-main"><strong>{asset.symbol}</strong><span>{asset.name}</span></div><div className="asset-value"><strong>{asset.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })}</strong><span>{money(total, currency)}</span></div><div className="asset-change">{asset.change} ↗</div><ChevronRight className="asset-chevron" size={15} /></div>
 }
 function AssetDetailModal({ asset, currency, visible, transactions, onClose }: { asset: DisplayAsset; currency: Currency; visible: boolean; transactions: Tx[]; onClose: () => void }) {
+  const [range, setRange] = useState<HistoryRange>('7D')
+  const [history, setHistory] = useState<HistoricalPoint[]>([])
+  const [historyStatus, setHistoryStatus] = useState<HistoryStatus>('loading')
+  const [historyUpdatedAt, setHistoryUpdatedAt] = useState<string | null>(null)
   const total = asset.amount * asset.price
-  const points = asset.symbol === 'TON' ? '2,70 28,58 55,63 82,36 109,44 137,24 164,35 192,15 220,25 248,9 278,16 308,4' : asset.symbol === 'ETH' ? '2,52 28,45 55,54 82,31 109,37 137,19 164,28 192,35 220,16 248,21 278,8 308,12' : '2,36 28,35 55,37 82,33 109,35 137,31 164,33 192,30 220,32 248,29 278,30 308,28'
+  const fallbackPoints = asset.symbol === 'TON' ? '2,70 28,58 55,63 82,36 109,44 137,24 164,35 192,15 220,25 248,9 278,16 308,4' : asset.symbol === 'ETH' ? '2,52 28,45 55,54 82,31 109,37 137,19 164,28 192,35 220,16 248,21 278,8 308,12' : '2,36 28,35 55,37 82,33 109,35 137,31 164,33 192,30 220,32 248,29 278,30 308,28'
   const assetTransactions = transactions.filter(tx => {
     const text = (tx.title + ' ' + tx.detail + ' ' + tx.amount).toLocaleUpperCase()
     return text.includes(asset.symbol)
   }).slice(0, 4)
-  return <div className="tx-modal-backdrop asset-modal-backdrop" onClick={onClose}><section className="tx-modal glass asset-detail-modal" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title" onClick={e => e.stopPropagation()}><div className="tx-modal-top"><span className="section-kicker">ДЕТАЛИ АКТИВА</span><button className="round-icon" onClick={onClose} aria-label="Закрыть детали актива">×</button></div><div className={'coin-icon asset-detail-icon ' + asset.color}>{asset.mark}</div><h2 id="asset-modal-title">{asset.name}</h2><p className="asset-detail-symbol">{asset.symbol} · Demo Testnet</p><div className="asset-detail-total">{visible ? money(total, currency) : '••••••••'}</div><p className="asset-detail-caption">{asset.priceSource === 'market' ? 'Оценка демо-количества по рынку' : 'Общая демо-стоимость'}</p><div className="asset-detail-chart" role="img" aria-label={`Условный график ${asset.symbol}`}><svg viewBox="0 0 310 76" preserveAspectRatio="none" aria-hidden="true"><path className="chart-grid-line" d="M0 20 H310 M0 42 H310 M0 64 H310" /><polyline points={points} className="chart-line" /></svg></div><div className="tx-detail-list asset-detail-list"><div><span>Количество</span><strong>{asset.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })} {asset.symbol}</strong></div><div><span>Цена за единицу</span><strong>{visible ? money(asset.price, currency) : '••••'}</strong></div><div><span>{asset.priceSource === 'market' ? 'Изменение за 24 ч.' : 'Изменение (демо)'}</span><strong className="asset-detail-positive">{asset.change}</strong></div><div><span>Сеть</span><strong>Demo Testnet</strong></div></div><div className="asset-history"><div className="asset-history-heading"><strong>История актива</strong><span>{assetTransactions.length} {assetTransactions.length === 1 ? 'операция' : assetTransactions.length > 1 && assetTransactions.length < 5 ? 'операции' : 'операций'}</span></div>{assetTransactions.length ? <div className="asset-history-list">{assetTransactions.map(tx => <div className="asset-history-row" key={tx.id}><div className={'tx-icon ' + (tx.incoming ? 'incoming' : 'outgoing')}>{tx.incoming ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}</div><div className="asset-history-main"><strong>{tx.title}</strong><span>{tx.time}</span></div><strong className={'asset-history-amount ' + (tx.incoming ? 'positive' : '')}>{tx.amount}</strong></div>)}</div> : <p className="asset-history-empty">Пока нет демо-операций с {asset.symbol}. Они появятся здесь, когда будут добавлены в историю.</p>}</div><p className="tx-modal-note">{asset.priceSource === 'market' ? 'Цена взята из CoinGecko и обновляется по запросу. График остаётся условным; количество актива и операции — демо.' : 'Сейчас показана условная демо-цена, потому что актуальные котировки недоступны. График и количество актива — демонстрационные.'}</p><button className="submit-button" onClick={onClose}>Готово</button></section></div>
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+    const loadHistory = async () => {
+      setHistoryStatus('loading')
+      setHistory([])
+      setHistoryUpdatedAt(null)
+      try {
+        const coinId = marketCoinIds[asset.symbol]
+        if (!coinId) throw new Error('Unknown asset')
+        const days = range === '24H' ? '1' : range === '7D' ? '7' : '30'
+        const url = 'https://api.coingecko.com/api/v3/coins/' + encodeURIComponent(coinId) + '/market_chart?vs_currency=' + currency.toLowerCase() + '&days=' + days
+        const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal })
+        if (!response.ok) throw new Error('Historical price request failed: ' + response.status)
+        const payload: unknown = await response.json()
+        if (!payload || typeof payload !== 'object' || !Array.isArray((payload as { prices?: unknown }).prices)) throw new Error('Unexpected historical price response')
+        const raw = (payload as { prices: unknown[] }).prices
+        const valid = raw.filter((point): point is [number, number] =>
+          Array.isArray(point) && point.length >= 2 &&
+          typeof point[0] === 'number' && Number.isFinite(point[0]) &&
+          typeof point[1] === 'number' && Number.isFinite(point[1]) && point[1] > 0
+        )
+        if (valid.length < 2) throw new Error('Not enough historical points')
+        const step = Math.max(1, Math.ceil(valid.length / 40))
+        const sampled = valid.filter((_, index) => index === 0 || index === valid.length - 1 || index % step === 0)
+          .map(point => ({ time: point[0], price: point[1] }))
+        if (!active) return
+        setHistory(sampled)
+        setHistoryStatus('live')
+        setHistoryUpdatedAt(new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))
+      } catch {
+        if (!active) return
+        setHistoryStatus('demo')
+      }
+    }
+    void loadHistory()
+    return () => { active = false; controller.abort() }
+  }, [asset.symbol, currency, range])
+
+  const prices = history.map(point => point.price)
+  const minPrice = prices.length ? Math.min(...prices) : asset.price * 0.94
+  const maxPrice = prices.length ? Math.max(...prices) : asset.price * 1.04
+  const spread = maxPrice - minPrice || Math.max(maxPrice * 0.01, 0.000001)
+  const chartPoints = history.map((point, index) => ({
+    x: 2 + index / Math.max(1, history.length - 1) * 306,
+    y: 68 - ((point.price - minPrice) / spread) * 60
+  }))
+  const historicalLine = chartPoints.map((point, index) => (index === 0 ? 'M' : 'L') + ' ' + point.x.toFixed(1) + ' ' + point.y.toFixed(1)).join(' ')
+  const historicalArea = chartPoints.length ? historicalLine + ' L 308 74 L 2 74 Z' : ''
+  const change = history.length > 1 ? ((history[history.length - 1].price / history[0].price) - 1) * 100 : null
+  const rangeLabel = range === '24H' ? '24 часа' : range === '7D' ? '7 дней' : '30 дней'
+  return <div className="tx-modal-backdrop asset-modal-backdrop" onClick={onClose}><section className="tx-modal glass asset-detail-modal" role="dialog" aria-modal="true" aria-labelledby="asset-modal-title" onClick={e => e.stopPropagation()}><div className="tx-modal-top"><span className="section-kicker">ДЕТАЛИ АКТИВА</span><button className="round-icon" onClick={onClose} aria-label="Закрыть детали актива">×</button></div><div className={'coin-icon asset-detail-icon ' + asset.color}>{asset.mark}</div><h2 id="asset-modal-title">{asset.name}</h2><p className="asset-detail-symbol">{asset.symbol} · Demo Testnet</p><div className="asset-detail-total">{visible ? money(total, currency) : '••••••••'}</div><p className="asset-detail-caption">{asset.priceSource === 'market' ? 'Оценка демо-количества по рынку' : 'Общая демо-стоимость'}</p>
+    <div className="asset-detail-chart-wrap">
+      <div className="asset-history-chart-heading"><strong>История рыночной цены</strong><span>{historyStatus === 'loading' ? 'Загрузка…' : historyStatus === 'live' ? 'CoinGecko · ' + historyUpdatedAt : 'История недоступна'}</span></div>
+      <div className="asset-detail-chart" role="img" aria-label={historyStatus === 'live' ? 'Реальный график ' + asset.symbol + ' за ' + rangeLabel + ' по CoinGecko' : 'График ' + asset.symbol + ', демонстрационные данные'}>
+        <svg viewBox="0 0 310 76" preserveAspectRatio="none" aria-hidden="true">
+          <path className="chart-grid-line" d="M0 20 H310 M0 42 H310 M0 64 H310" />
+          {historyStatus === 'live' && chartPoints.length > 1 ? <><path d={historicalArea} fill="url(#portfolioChartFill)" /><path d={historicalLine} className="chart-line" /></> : <polyline points={fallbackPoints} className="chart-line" />}
+        </svg>
+      </div>
+      <div className="asset-history-controls" role="group" aria-label="Период исторического графика">{(['24H', '7D', '30D'] as HistoryRange[]).map(item => <button key={item} type="button" className={range === item ? 'selected' : ''} aria-pressed={range === item} onClick={() => setRange(item)}>{item === '24H' ? '24 часа' : item === '7D' ? '7 дней' : '30 дней'}</button>)}</div>
+      {historyStatus === 'live' && history.length > 1 ? <div className="asset-history-range-values"><span>Мин. {visible ? money(minPrice, currency) : '••••'}</span><span>Макс. {visible ? money(maxPrice, currency) : '••••'}</span><span className={change !== null && change >= 0 ? 'positive' : 'negative'}>{change === null ? '—' : (change > 0 ? '+' : '') + change.toFixed(2) + '%'}</span></div> : <p className="asset-history-chart-note">{historyStatus === 'loading' ? 'Получаем исторические котировки…' : 'CoinGecko не вернул историю. График выше — только пример, а не рыночные данные.'}</p>}
+    </div>
+    <div className="tx-detail-list asset-detail-list"><div><span>Количество</span><strong>{asset.amount.toLocaleString('en-US', { maximumFractionDigits: 4 })} {asset.symbol}</strong></div><div><span>Цена за единицу</span><strong>{visible ? money(asset.price, currency) : '••••'}</strong></div><div><span>{asset.priceSource === 'market' ? 'Изменение за 24 ч.' : 'Изменение (демо)'}</span><strong className="asset-detail-positive">{asset.change}</strong></div><div><span>Сеть</span><strong>Demo Testnet</strong></div></div><div className="asset-history"><div className="asset-history-heading"><strong>История операций</strong><span>{assetTransactions.length} {assetTransactions.length === 1 ? 'операция' : assetTransactions.length > 1 && assetTransactions.length < 5 ? 'операции' : 'операций'}</span></div>{assetTransactions.length ? <div className="asset-history-list">{assetTransactions.map(tx => <div className="asset-history-row" key={tx.id}><div className={'tx-icon ' + (tx.incoming ? 'incoming' : 'outgoing')}>{tx.incoming ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}</div><div className="asset-history-main"><strong>{tx.title}</strong><span>{tx.time}</span></div><strong className={'asset-history-amount ' + (tx.incoming ? 'positive' : '')}>{tx.amount}</strong></div>)}</div> : <p className="asset-history-empty">Пока нет демо-операций с {asset.symbol}. Они появятся здесь, когда будут добавлены в историю.</p>}</div><p className="tx-modal-note">{historyStatus === 'live' ? 'Исторический график и котировки загружены из CoinGecko. Количество актива и операции остаются демонстрационными.' : 'Исторические котировки сейчас недоступны. Цена, график и количество актива не используются для реальных переводов.'}</p><button className="submit-button" onClick={onClose}>Готово</button></section></div>
 }
 function TransactionRow({ tx, onClick }: { tx: Tx; onClick: () => void }) {
   return <div className="transaction-row" role="button" tabIndex={0} onClick={onClick} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}><div className={'tx-icon ' + (tx.incoming ? 'incoming' : 'outgoing')}>{tx.incoming ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}</div><div className="tx-main"><strong>{tx.title}</strong><span>{tx.detail}</span><small>{tx.time}</small></div><div className="tx-amount"><strong className={tx.incoming ? 'positive' : ''}>{tx.amount}</strong><span className="tx-status">● Demo</span></div></div>
