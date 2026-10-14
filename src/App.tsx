@@ -230,14 +230,69 @@ export default function App() {
 
 
 type ChartRange = '24H' | '7D' | '30D'
-const chartSeries: Record<ChartRange, number[]> = {
-  '24H': [0.972, 0.981, 0.976, 0.988, 0.983, 0.995, 0.991, 1],
-  '7D': [0.914, 0.928, 0.919, 0.951, 0.944, 0.972, 0.961, 1],
-  '30D': [0.872, 0.889, 0.883, 0.914, 0.905, 0.938, 0.927, 0.962, 0.951, 1]
-}
+type PortfolioHistoryStatus = 'loading' | 'live' | 'demo'
+type PortfolioHistoryPoint = { time: number; value: number }
 function PortfolioChart({ total, currency, visible }: { total: number; currency: Currency; visible: boolean }) {
   const [range, setRange] = useState<ChartRange>('7D')
-  const values = chartSeries[range].map(point => total * point)
+  const [history, setHistory] = useState<PortfolioHistoryPoint[]>([])
+  const [historyStatus, setHistoryStatus] = useState<PortfolioHistoryStatus>('loading')
+  const [historyUpdatedAt, setHistoryUpdatedAt] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    const controller = new AbortController()
+    const loadPortfolioHistory = async () => {
+      setHistoryStatus('loading')
+      setHistory([])
+      setHistoryUpdatedAt(null)
+      try {
+        const days = range === '24H' ? '1' : range === '7D' ? '7' : '30'
+        const histories = await Promise.all(assets.map(async asset => {
+          const coinId = marketCoinIds[asset.symbol]
+          const url = 'https://api.coingecko.com/api/v3/coins/' + encodeURIComponent(coinId) + '/market_chart?vs_currency=' + currency.toLowerCase() + '&days=' + days
+          const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: controller.signal })
+          if (!response.ok) throw new Error('Historical price request failed: ' + response.status)
+          const payload: unknown = await response.json()
+          if (!payload || typeof payload !== 'object' || !Array.isArray((payload as { prices?: unknown }).prices)) throw new Error('Unexpected historical price response')
+          const prices = (payload as { prices: unknown[] }).prices.filter((point): point is [number, number] =>
+            Array.isArray(point) && point.length >= 2 &&
+            typeof point[0] === 'number' && Number.isFinite(point[0]) &&
+            typeof point[1] === 'number' && Number.isFinite(point[1]) && point[1] > 0
+          )
+          if (prices.length < 2) throw new Error('Not enough historical points')
+          return { amount: asset.amount, prices }
+        }))
+        const pointCount = 36
+        const combined: PortfolioHistoryPoint[] = Array.from({ length: pointCount }, (_, index) => {
+          const value = histories.reduce((sum, item) => {
+            const sourceIndex = Math.round(index / (pointCount - 1) * (item.prices.length - 1))
+            return sum + item.amount * item.prices[sourceIndex][1]
+          }, 0)
+          const first = histories[0].prices
+          const timeIndex = Math.round(index / (pointCount - 1) * (first.length - 1))
+          return { time: first[timeIndex][0], value }
+        })
+        if (!active) return
+        setHistory(combined)
+        setHistoryStatus('live')
+        setHistoryUpdatedAt(new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }))
+      } catch {
+        if (!active) return
+        setHistoryStatus('demo')
+      }
+    }
+    void loadPortfolioHistory()
+    return () => { active = false; controller.abort() }
+  }, [currency, range])
+
+  const demoFactors: Record<ChartRange, number[]> = {
+    '24H': [0.972, 0.981, 0.976, 0.988, 0.983, 0.995, 0.991, 1],
+    '7D': [0.914, 0.928, 0.919, 0.951, 0.944, 0.972, 0.961, 1],
+    '30D': [0.872, 0.889, 0.883, 0.914, 0.905, 0.938, 0.927, 0.962, 0.951, 1]
+  }
+  const values = historyStatus === 'live' && history.length > 1
+    ? history.map(point => point.value)
+    : demoFactors[range].map(point => total * point)
   const min = Math.min(...values)
   const max = Math.max(...values)
   const spread = max - min || 1
@@ -248,10 +303,11 @@ function PortfolioChart({ total, currency, visible }: { total: number; currency:
   const line = coords.map((point, i) => `${i === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ')
   const area = `${line} L 310 106 L 10 106 Z`
   const change = ((values[values.length - 1] / values[0]) - 1) * 100
+  const rangeLabel = range === '24H' ? '24 часа' : range === '7D' ? '7 дней' : '30 дней'
   return <section className="portfolio-chart glass-subtle">
-    <div className="chart-heading"><div><span className="section-kicker">АНАЛИТИКА</span><h2>Динамика портфеля</h2><p>Условная история стоимости</p></div><div className="chart-icon"><TrendingUp size={19} /></div></div>
-    <div className="chart-summary"><strong>{visible ? money(total, currency) : '••••••'}</strong><span className="chart-change">↗ {change.toFixed(1)}% <small>за период</small></span></div>
-    <div className="chart-plot" role="img" aria-label={`Демонстрационный график стоимости портфеля за ${range}`}>
+    <div className="chart-heading"><div><span className="section-kicker">АНАЛИТИКА</span><h2>Динамика портфеля</h2><p>{historyStatus === 'live' ? 'Историческая оценка по CoinGecko' : historyStatus === 'loading' ? 'Загружаем историю рынка…' : 'Условная история стоимости'}</p></div><div className="chart-icon"><TrendingUp size={19} /></div></div>
+    <div className="chart-summary"><strong>{visible ? money(total, currency) : '••••••'}</strong><span className={'chart-change ' + (change >= 0 ? 'positive' : 'negative')}>{change > 0 ? '↗ +' : change < 0 ? '↘ ' : ''}{change.toFixed(2)}% <small>за период</small></span></div>
+    <div className="chart-plot" role="img" aria-label={historyStatus === 'live' ? 'Исторический график оценочной стоимости демо-портфеля за ' + rangeLabel : 'Демонстрационный график стоимости портфеля за ' + rangeLabel}>
       <svg viewBox="0 0 320 112" preserveAspectRatio="none" aria-hidden="true">
         <defs><linearGradient id="portfolioChartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a78bfa" stopOpacity=".34" /><stop offset="100%" stopColor="#a78bfa" stopOpacity="0" /></linearGradient></defs>
         <path className="chart-grid-line" d="M 0 24 H 320 M 0 60 H 320 M 0 96 H 320" />
@@ -262,10 +318,9 @@ function PortfolioChart({ total, currency, visible }: { total: number; currency:
     </div>
     <div className="chart-axis"><span>{visible ? money(min, currency) : '••••'}</span><span>{visible ? money(max, currency) : '••••'}</span></div>
     <div className="chart-ranges" role="group" aria-label="Период графика">{(['24H', '7D', '30D'] as ChartRange[]).map(item => <button key={item} className={range === item ? 'selected' : ''} aria-pressed={range === item} onClick={() => setRange(item)}>{item === '24H' ? '24 часа' : item === '7D' ? '7 дней' : '30 дней'}</button>)}</div>
-    <p className="chart-disclaimer">График построен на условных данных и не отражает реальные рыночные цены.</p>
+    <p className="chart-disclaimer">{historyStatus === 'live' ? 'Исторические цены CoinGecko × неизменные демо-количества. Это оценка, не реальный кошелёк.' : historyStatus === 'loading' ? 'Загружаем исторические цены; если источник недоступен, останется демографик.' : 'История CoinGecko недоступна: показаны только условные данные.'}{historyUpdatedAt ? ' Обновлено в ' + historyUpdatedAt + '.' : ''}</p>
   </section>
 }
-
 function PageHeading({ kicker, title, subtitle }: { kicker: string; title: string; subtitle: string }) {
   return <div className="page-heading"><span className="section-kicker">{kicker}</span><h1>{title}</h1><p>{subtitle}</p></div>
 }
